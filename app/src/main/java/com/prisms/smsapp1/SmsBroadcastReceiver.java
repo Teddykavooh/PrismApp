@@ -35,7 +35,7 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 Date date = new Date(smsTime);
 
                 smsMessageStr.append("REF: ").append(smsIndex).append("\n");
-                smsMessageStr.append("SMS From: ").append(address).append("\n");
+                smsMessageStr.append("From: ").append(address).append("\n");
                 smsMessageStr.append(smsBody).append("\n");
                 smsMessageStr.append("Date: ").append(date).append("\n");
 

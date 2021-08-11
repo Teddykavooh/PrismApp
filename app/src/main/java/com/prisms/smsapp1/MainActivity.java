@@ -127,10 +127,6 @@ public class MainActivity extends AppCompatActivity {
         super.onOptionsItemSelected(item);
 
         switch (item.getItemId()) {
-            case R.id.fileExplorer:
-                Toast.makeText(getApplicationContext(), "File Explorer, more...",
-                        Toast.LENGTH_SHORT).show();
-                return  true;
             case R.id.delete:
                 //delete alert Dialog
                 new AlertDialog.Builder(this)
@@ -179,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("dd39775621b4b422")) {
+        if (deviceId.equals("3a094fcc0da26100")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -192,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Printer Activation and Deactivation
     public void printOn(MenuItem i) {
-        if (deviceId.equals("dd39775621b4b422")) {
+        if (deviceId.equals("3a094fcc0da26100")) {
             /*Default:e7171c1fe9945676*/
             /*set Power ON*/
             powerLaunch = 1;
@@ -244,6 +240,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void onAbout(MenuItem i) {
+        setContentView(R.layout.activity_about);
+    }
+
+    public void onArrBack(View v) {
+        setContentView(R.layout.activity_main);
+    }
+
     public void onClickBmp2() {
         if (powerLaunch == 1) {
             if (printThread != null && printThread.isThreadFinished()) {
@@ -259,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickPrnOpen(MenuItem i) {
+    /*public void onClickPrnOpen(MenuItem i) {
         //refreshSmsInbox();
         if (powerLaunch == 1) {
             if (printThread != null && printThread.isThreadFinished()) {
@@ -273,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Activate Print to continue",
                     Toast.LENGTH_SHORT).show();
         }
-    }
+    }*/
 
     public void onPrnOpen() {
         if (powerLaunch == 1) {
@@ -535,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
             long timeMillis = smsInboxCursor.getLong(indexDate);
             Date date = new Date(timeMillis);
             String str = "REF: " + smsInboxCursor.getString(indexId) + "\n"
-                    + "SMS From: " + smsInboxCursor.getString(indexAddress) + "\n"
+                    + "From: " + smsInboxCursor.getString(indexAddress) + "\n"
                     + smsInboxCursor.getString(indexBody) + "\n"
                     + "Date: " + date + "\n";
             arrayAdapter.add(str);
@@ -750,7 +754,16 @@ public class MainActivity extends AppCompatActivity {
                         posApiHelper.PrintStr("                  STATION           \n");*/
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
+                        posApiHelper.PrintStr("================================\n");
+                        posApiHelper.PrintStr("REDBERRY LOUNGE\n");
+                        posApiHelper.PrintStr("NAIROBI-KENYA\n");
+                        posApiHelper.PrintStr("================================\n");
+                        posApiHelper.PrintStr("M-PESA PAYMENT DETAILS:-\n");
+                        posApiHelper.PrintStr("================================\n");
                         posApiHelper.PrintStr(ss + "\n" + text + "\n");
+                        posApiHelper.PrintStr("================================\n");
+                        posApiHelper.PrintStr("TILL Number: 5853023\n");
+                        posApiHelper.PrintStr("================================\n");
                         posApiHelper.PrintStr("        \n");
                         /*posApiHelper.PrintStr("=====================\n");
                         Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),

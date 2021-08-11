@@ -89,7 +89,7 @@
             android:layout_below="@+id/checkbox"
             android:textSize="16sp"
             app:drawableLeftCompat="@drawable/ic_baseline_thumb_up_24"
-            app:drawableTint="@color/colorPrimary"/>
+            app:drawableTint="@color/colorAccent"/>
 
         <TextView
             android:id="@+id/caut"
@@ -102,7 +102,17 @@
             android:layout_below="@+id/thank"
             android:textSize="16sp"
             app:drawableLeftCompat="@drawable/ic_baseline_warning_24"
-            app:drawableTint="@color/colorPrimary"/>
+            app:drawableTint="@color/colorAccent"/>
+
+        <Button
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/caut"
+            android:background="@drawable/ic_baseline_arrow_back_24"
+            android:onClick="onArrBack"
+            android:layout_alignParentRight="true" />
 
     </RelativeLayout>
 </ScrollView>

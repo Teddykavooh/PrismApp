@@ -15,7 +15,7 @@
         android:title="Activate Printer"
         android:onClick="printOn"
         android:id="@+id/printerOn"
-        app:showAsAction="never"        />
+        app:showAsAction="never"/>
 
     <item
         android:title="Deactivate Printer"
@@ -29,17 +29,12 @@
         app:showAsAction="never" />
     <item
         android:title="About"
-        android:onClick=""
+        android:onClick="onAbout"
         app:showAsAction="never"/>
     <item
         android:title="@string/exit"
         android:id="@+id/exit"
         app:showAsAction="never"/>
-    <item
-        android:title="@string/file_explorer"
-        android:id="@+id/fileExplorer"
-        android:icon="@drawable/ic_attach_file"
-        app:showAsAction="always" />
     <item
         android:title="@string/printer_on"
         android:id="@+id/prnOnIcon"
