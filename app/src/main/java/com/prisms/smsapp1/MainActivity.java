@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.text.Layout;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
@@ -44,6 +45,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -175,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("3a094fcc0da26100")) {
+        if (deviceId.equals("3169cced15bd9591")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -188,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Printer Activation and Deactivation
     public void printOn(MenuItem i) {
-        if (deviceId.equals("3a094fcc0da26100")) {
+        if (deviceId.equals("3169cced15bd9591")) {
             /*Default:e7171c1fe9945676*/
             /*set Power ON*/
             powerLaunch = 1;
@@ -241,11 +243,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onAbout(MenuItem i) {
-        setContentView(R.layout.activity_about);
-    }
-
-    public void onArrBack(View v) {
-        setContentView(R.layout.activity_main);
+        Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
+        startActivity(aboutIntent);
     }
 
     public void onClickBmp2() {
@@ -596,6 +595,34 @@ public class MainActivity extends AppCompatActivity {
         sendBroadcast(disablePowerKeyIntent);
     }
 
+    //Custom Print
+    public void customPrint() {
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("REDBERRY LOUNGE\n");
+        posApiHelper.PrintStr("NAIROBI-KENYA\n");
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("M-PESA PAYMENT DETAILS:-\n");
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("\n" + text + "\n");
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("TILL Number: 5853023\n");
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("        \n");
+    }
+
+    public void customPrint2() {
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("REDBERRY LOUNGE\n");
+        posApiHelper.PrintStr("NAIROBI-KENYA\n");
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("M-PESA PAYMENT DETAILS:-\n");
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr( newText + "\n");
+        posApiHelper.PrintStr("================================\n");
+        posApiHelper.PrintStr("TILL Number: 5853023\n");
+        posApiHelper.PrintStr("================================\n");
+    }
+
     public void autoPrint() {
 //        System.out.println("New dataFour: " + arrayAdapter.getItem(0)); /*Working well*/
         newText = arrayAdapter.getItem(0);
@@ -704,10 +731,8 @@ public class MainActivity extends AppCompatActivity {
 
                     case AUTO_PRINT:
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr( newText + "\n");
-                        posApiHelper.PrintStr("        \n");
-                        posApiHelper.PrintStr("        \n");
-                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -745,35 +770,8 @@ public class MainActivity extends AppCompatActivity {
                         ss.setSpan(boldSpan, 0, 3, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         /*Full line == 30 characters*/
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
-                        /*posApiHelper.PrintStr("     FREENALLY INVESTMENTS\n");
-                        posApiHelper.PrintStr("                  LIMITED");
-                        posApiHelper.PrintStr("__________________________________\n");
-                        posApiHelper.PrintStr("           P.O.BOX 92-0057\n");
-                        posApiHelper.PrintStr("                  NAIROBI\n");
-                        posApiHelper.PrintStr("     GALLERIA OILIBYA SERVICE\n");
-                        posApiHelper.PrintStr("                  STATION           \n");*/
                         posApiHelper.PrintStr("        \n");
-                        posApiHelper.PrintStr("        \n");
-                        posApiHelper.PrintStr("================================\n");
-                        posApiHelper.PrintStr("REDBERRY LOUNGE\n");
-                        posApiHelper.PrintStr("NAIROBI-KENYA\n");
-                        posApiHelper.PrintStr("================================\n");
-                        posApiHelper.PrintStr("M-PESA PAYMENT DETAILS:-\n");
-                        posApiHelper.PrintStr("================================\n");
                         posApiHelper.PrintStr(ss + "\n" + text + "\n");
-                        posApiHelper.PrintStr("================================\n");
-                        posApiHelper.PrintStr("TILL Number: 5853023\n");
-                        posApiHelper.PrintStr("================================\n");
-                        posApiHelper.PrintStr("        \n");
-                        /*posApiHelper.PrintStr("=====================\n");
-                        Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),
-                                R.mipmap.pic);
-                        ret = posApiHelper.PrintBmp(bmp);
-                        posApiHelper.PrintStr("    www.androidposkenya.com\n");
-                        posApiHelper.PrintStr("  Powered by Renotech Systems\n");
-			            posApiHelper.PrintStr("        \n");*/
-                        posApiHelper.PrintStr("        \n");
-                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -845,8 +843,6 @@ public class MainActivity extends AppCompatActivity {
                         posApiHelper.PrintStr("        \n");
                         if (ret == 0) {
                             posApiHelper.PrintStr("\n\n\n");
-                            posApiHelper.PrintStr("                                         \n");
-                            posApiHelper.PrintStr("                                         \n");
 
                             SendMsg("Printing... ");
                             ret = posApiHelper.PrintStart();
