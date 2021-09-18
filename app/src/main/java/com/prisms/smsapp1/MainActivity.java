@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("3169cced15bd9591")) {
+        if (deviceId.equals("c3cd8e879b940bf0")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Printer Activation and Deactivation
     public void printOn(MenuItem i) {
-        if (deviceId.equals("3169cced15bd9591")) {
+        if (deviceId.equals("c3cd8e879b940bf0")) {
             /*Default:e7171c1fe9945676*/
             /*set Power ON*/
             powerLaunch = 1;
