@@ -48,4 +48,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation(name: 'A26c_library-debug', ext: 'aar')
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
 }

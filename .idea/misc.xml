@@ -3,7 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/AndroidProj/Original/SMSApp1/app/src/main/res/layout/activity_main.xml" value="0.10080336648814078" />
+        <entry key="..\:/AndroidProj/Original/SMSApp1/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.21544401544401545" />
+        <entry key="..\:/AndroidProj/Original/SMSApp1/app/src/main/res/drawable/rounded_corner.xml" value="0.21796875" />
+        <entry key="..\:/AndroidProj/Original/SMSApp1/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/AndroidProj/Original/SMSApp1/app/src/main/res/menu/main_menu.xml" value="0.14305555555555555" />
       </map>
     </option>

@@ -38,7 +38,9 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,14 +52,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
 
 import vpos.apipackage.PosApiHelper;
 import vpos.apipackage.PrintInitException;
+import vpos.apipackage.StringUtil;
 
-public class MainActivity extends AppCompatActivity {
+ public class MainActivity extends AppCompatActivity {
     ArrayList<String> smsMessagesList = new ArrayList<>();
     ListView messages;
     ArrayAdapter<String> arrayAdapter;
@@ -83,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private String newText;
     private String deviceId;
     SharedPreferences prismAppSp;
+    String ext_text;
 
     /*Print focus*/
     PosApiHelper posApiHelper = PosApiHelper.getInstance();
@@ -93,6 +99,14 @@ public class MainActivity extends AppCompatActivity {
     final int AUTO_PRINT = 3;
     int powerLaunch = 0;
     /*Print focus ends*/
+
+    /*Header and Footer*/
+    SharedPreferences myData;
+    EditText header;
+    EditText footer;
+    String myHeader;
+    String myFooter;
+    RelativeLayout myLay;
 
     /*Intercepting messages.*/
 
@@ -177,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("c3cd8e879b940bf0")) {
+        if (deviceId.equals("e239aa73efe3f7f2")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -190,8 +204,8 @@ public class MainActivity extends AppCompatActivity {
 
     //Printer Activation and Deactivation
     public void printOn(MenuItem i) {
-        if (deviceId.equals("c3cd8e879b940bf0")) {
-            /*Default:e7171c1fe9945676*/
+        if (deviceId.equals("e239aa73efe3f7f2")) {
+            /*Default:fcf52d5c63cb4676*/
             /*set Power ON*/
             powerLaunch = 1;
             PosApiHelper.getInstance().SysSetPower(powerLaunch);
@@ -247,20 +261,15 @@ public class MainActivity extends AppCompatActivity {
         startActivity(aboutIntent);
     }
 
-    public void onClickBmp2() {
-        if (powerLaunch == 1) {
-            if (printThread != null && printThread.isThreadFinished()) {
-                Log.e(tag, "Thread is still running...");
-                return;
-            }
-
-            printThread = new Print_Thread(PRINT_BMP);
-            printThread.start();
-        } else {
-            Toast.makeText(getApplicationContext(), "Activate Print to continue",
-                    Toast.LENGTH_SHORT).show();
-        }
+    public void onStyle(MenuItem i) {
+        myLay.setVisibility(View.VISIBLE);
+        myLay.bringToFront();
+        myLay.invalidate();
     }
+
+     public void onArrBack2(View v) {
+        myLay.setVisibility(View.INVISIBLE);
+     }
 
     /*public void onClickPrnOpen(MenuItem i) {
         //refreshSmsInbox();
@@ -318,12 +327,17 @@ public class MainActivity extends AppCompatActivity {
 
         //Get Verifier
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        System.out.println(deviceId);
+        //System.out.println(deviceId);
         setContentView(R.layout.activity_main);
 
         // Get the application context
         mContext = getApplicationContext();
         mActivity = MainActivity.this;
+
+        myLay = findViewById(R.id.lay2);
+        header = findViewById(R.id.header);
+        footer = findViewById(R.id.footer);
+        myData = getSharedPreferences("com.prisms.smsapp1", MODE_PRIVATE);
 
         messages = findViewById(R.id.messages);
         //input = (EditText) findViewById(R.id.input);
@@ -357,14 +371,12 @@ public class MainActivity extends AppCompatActivity {
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     /* Converting listView element to string. */
                                     text = (String) ((TextView) view).getText();
-                                    //Debug
-                                    /*
-                                    System.out.println("Hello my sms: " + text);
-                                    System.out.println("Printer Status: " + powerLaunch);
-                                    System.out.println("Selected sms: " + i);
+                                    /**
+                                     * Get without balance
+                                     *
+                                     ext_bal();
                                      */
                                     onClickConsume();
-                                    //onClickBmp2();
                                 }
                             })
                             .setNegativeButton("QUIT", null)
@@ -732,7 +744,21 @@ public class MainActivity extends AppCompatActivity {
                     case AUTO_PRINT:
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
                         posApiHelper.PrintStr("        \n");
+//                        posApiHelper.PrintStr("ENTETAINER TRUCKS CO. LTD\n");
+//                        posApiHelper.PrintStr("SHELL ELDORET NAIROBI ROAD");
+//                        posApiHelper.PrintStr("KAPSOYA, KENYA");
+//                        posApiHelper.PrintStr("TILL BUY GOODS 202742");
+                        posApiHelper.PrintStr("________________________________\n");
+                        posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
+                        posApiHelper.PrintStr("________________________________\n");
                         posApiHelper.PrintStr( newText + "\n");
+                        posApiHelper.PrintStr("________________________________\n");
+//                        posApiHelper.PrintStr("Urban Point Restaurant CBD\n");
+//                        posApiHelper.PrintStr("TILL NUMBER: 9150451\n");
+//                        posApiHelper.PrintStr("Beyond Luxury & Hospitality\n");
+                        posApiHelper.PrintStr("        \n");
+                        posApiHelper.PrintStr("        \n");
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -771,7 +797,27 @@ public class MainActivity extends AppCompatActivity {
                         /*Full line == 30 characters*/
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
                         posApiHelper.PrintStr("        \n");
+//                        posApiHelper.PrintStr("ENTETAINER TRUCKS CO. LTD\n");
+//                        posApiHelper.PrintStr("SHELL ELDORET NAIROBI ROAD");
+//                        posApiHelper.PrintStr("KAPSOYA, KENYA");
+//                        posApiHelper.PrintStr("TILL BUY GOODS 202742");
+                        posApiHelper.PrintStr("________________________________\n");
+                        posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
+                        posApiHelper.PrintStr("________________________________\n");
                         posApiHelper.PrintStr(ss + "\n" + text + "\n");
+                        posApiHelper.PrintStr("________________________________\n");
+//                        posApiHelper.PrintStr("TILL NUMBER: 9150451\n");
+//                        posApiHelper.PrintStr("Beyond Luxury & Hospitality\n");
+                        posApiHelper.PrintStr("        \n");
+
+                        /**
+                         * M-PESA CUT
+                         *
+                        posApiHelper.PrintStr(ss + "\n" + ext_text + "\n");
+                        */
+
+                        posApiHelper.PrintStr("        \n");
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -945,5 +991,22 @@ public class MainActivity extends AppCompatActivity {
             //	m_voltage = (int) (65+19*voltage_level/100);
             //   Log.e("wbw","m_voltage  = " + m_voltage );
         }
+    }
+
+    //Remove M-PESA BALANCE
+    public void ext_bal() {
+        String new1 = StringUtils.substringBefore(text, " New ");
+        String new2 = StringUtils.substringAfter(text, "Transaction ");
+        Log.e("ext_bal: ", "New Msg: " + new1 + " Transaction " + new2);
+        ext_text = new1 + " Transaction " + new2;
+    }
+
+    public void headFootFunc(View v) {
+        myHeader = header.getText().toString();
+        myFooter = footer.getText().toString();
+        SharedPreferences.Editor editor = myData.edit();
+        editor.putString("Header", myHeader);
+        editor.putString("Footer", myFooter);
+        editor.apply();
     }
 }
