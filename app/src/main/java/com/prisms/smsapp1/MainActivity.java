@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.role.RoleManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -14,16 +15,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
+import android.provider.Telephony;
 import android.text.Layout;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -55,14 +59,16 @@ import androidx.core.content.res.ResourcesCompat;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import vpos.apipackage.PosApiHelper;
 import vpos.apipackage.PrintInitException;
 import vpos.apipackage.StringUtil;
 
- public class MainActivity extends AppCompatActivity {
+ public class MainActivity extends AppCompatActivity implements AppsDialog.OnAppSelectedListener {
     ArrayList<String> smsMessagesList = new ArrayList<>();
     ListView messages;
     ArrayAdapter<String> arrayAdapter;
@@ -191,7 +197,7 @@ import vpos.apipackage.StringUtil;
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("e239aa73efe3f7f2")) {
+        if (deviceId.equals("1616e85ee3460106")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -204,7 +210,20 @@ import vpos.apipackage.StringUtil;
 
     //Printer Activation and Deactivation
     public void printOn(MenuItem i) {
-        if (deviceId.equals("e239aa73efe3f7f2")) {
+        if (deviceId.equals("1616e85ee3460106")) {
+            /*fcf52d5c63cb4676
+            b13b0963dbe71031
+            3863953cd3aa6c72
+            e0b3589df8892489
+            3a451f2174d4ca7d
+            4904a7cca0cc1137
+            f98bd30b734fa68f
+            fa01aeb6ee83738e
+            75a07457a9ced030
+            95cf6692d153873a
+            * e0b3589df8892489
+            * 3a451f2174d4ca7d
+            * 3863953cd3aa6c72*/
             /*Default:fcf52d5c63cb4676*/
             /*set Power ON*/
             powerLaunch = 1;
@@ -260,6 +279,11 @@ import vpos.apipackage.StringUtil;
         Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
         startActivity(aboutIntent);
     }
+
+     @RequiresApi(api = Build.VERSION_CODES.N)
+     public void mkDefault(MenuItem i) {
+         msgAppChooser();
+     }
 
     public void onStyle(MenuItem i) {
         myLay.setVisibility(View.VISIBLE);
@@ -327,7 +351,7 @@ import vpos.apipackage.StringUtil;
 
         //Get Verifier
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        //System.out.println(deviceId);
+        System.out.println(deviceId);
         setContentView(R.layout.activity_main);
 
         // Get the application context
@@ -430,6 +454,106 @@ import vpos.apipackage.StringUtil;
             }
         });
     }
+
+     /**
+      * method starts an intent that will bring up a prompt for the user
+      * to select their default launcher. It comes up each time method is called.
+      */
+     @RequiresApi(api = Build.VERSION_CODES.N)
+     private void msgAppChooser() {
+         RoleManager roleManager;
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+             roleManager = getApplicationContext().getSystemService(RoleManager.class);
+             if (roleManager.isRoleAvailable(RoleManager.ROLE_SMS)) {
+                 if (roleManager.isRoleHeld(RoleManager.ROLE_SMS)) {
+                     Toast.makeText(getApplicationContext(), "PrismApp set as default.", Toast.LENGTH_SHORT).show();
+                     Intent i = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
+                     startActivity(i);
+//                     Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                     intent.setData(Uri.parse("package:" + getPackageName()));
+//                     startActivity(intent);
+                 } else {
+                     Intent roleRequestIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_SMS);
+                     startActivityForResult(roleRequestIntent, 2);
+                 }
+             }
+         } else {
+             //If android version is prior to Android 10
+             selectDefaultSmsPackage();
+         }
+         /*
+             Log.e("msgAppChooser: ", "MsgAppChooser() initiated, isNotDefault," +
+                     " Package name: " + myPackageName);
+         String myPackageName = getPackageName();
+         Intent setSmsAppIntent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+         setSmsAppIntent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, myPackageName);
+         startActivity(setSmsAppIntent);*/
+
+     }
+
+     //Longer Method
+     private static  final int DEF_SMS_REQ = 0;
+     private AppInfo selectedApp;
+     @RequiresApi(api = Build.VERSION_CODES.N)
+     private void selectDefaultSmsPackage() {
+         @SuppressLint("QueryPermissionsNeeded") final List<ResolveInfo> receivers = getPackageManager().queryBroadcastReceivers(new
+                 Intent(Telephony.Sms.Intents.SMS_DELIVER_ACTION), 0);
+         final ArrayList<AppInfo> apps = new ArrayList<>();
+         for (ResolveInfo info : receivers) {
+             final String packageName = info.activityInfo.packageName;
+             final String appName = getPackageManager().getApplicationLabel(info.activityInfo.applicationInfo).toString();
+             final Drawable icon = getPackageManager().getApplicationIcon(info.activityInfo.applicationInfo);
+             apps.add(new AppInfo(packageName, appName, icon));
+         }
+         apps.sort(new Comparator<AppInfo>() {
+             @Override
+             public int compare(AppInfo app1, AppInfo app2) {
+                 return app1.appName.compareTo(app2.appName);
+             }
+         });
+         new AppsDialog(this, apps).show();
+     }
+
+     public void onAppSelected(AppInfo selectedApp) {
+         this.selectedApp = selectedApp;
+         Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+         intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, selectedApp.packageName);
+         startActivityForResult(intent, DEF_SMS_REQ);
+     }
+
+     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+     @Override
+     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+         super.onActivityResult(requestCode, resultCode, data);
+         if (requestCode == DEF_SMS_REQ) {
+             String currentDefault = Telephony.Sms.getDefaultSmsPackage(this);
+             boolean isDefault = selectedApp.packageName.equals(currentDefault);
+
+             String msg = selectedApp.appName + (isDefault ?
+                     " successfully set as default" :
+                     " not set as default");
+
+             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+         }
+     }
+
+     public static class AppInfo {
+         String appName;
+         String packageName;
+         Drawable icon;
+
+         public AppInfo(String packageName, String appName, Drawable icon) {
+             this.packageName = packageName;
+             this.appName = appName;
+             this.icon = icon;
+         }
+
+         @NonNull
+         @Override
+         public String toString() {
+             return appName;
+         }
+     }
 
     @Override
     protected void onResume() {
@@ -608,31 +732,26 @@ import vpos.apipackage.StringUtil;
     }
 
     //Custom Print
-    public void customPrint() {
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("REDBERRY LOUNGE\n");
-        posApiHelper.PrintStr("NAIROBI-KENYA\n");
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("M-PESA PAYMENT DETAILS:-\n");
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("\n" + text + "\n");
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("TILL Number: 5853023\n");
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("        \n");
+    public void cHeader() {
+//        posApiHelper.PrintStr("RUBIS KAGWERE\n");
+//        posApiHelper.PrintStr("EMBU");
+//        posApiHelper.PrintStr("KRA PIN: P051619738U");
+        posApiHelper.PrintStr("__________________________________\n");
+        posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
+        posApiHelper.PrintStr("__________________________________\n");
     }
 
-    public void customPrint2() {
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("REDBERRY LOUNGE\n");
-        posApiHelper.PrintStr("NAIROBI-KENYA\n");
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("M-PESA PAYMENT DETAILS:-\n");
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr( newText + "\n");
-        posApiHelper.PrintStr("================================\n");
-        posApiHelper.PrintStr("TILL Number: 5853023\n");
-        posApiHelper.PrintStr("================================\n");
+    public void cFooter() {
+//        posApiHelper.PrintStr("________________________________\n");
+//        posApiHelper.PrintStr("TILL NUMBER: 696312\n");
+//        posApiHelper.PrintStr("RELAX & REFRESH");
+//        posApiHelper.PrintStr("A PERFECT FAMILY GETAWAY");
+//        posApiHelper.PrintStr("=================================\n");
+//        Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),
+//                R.mipmap.pic);
+//        ret = posApiHelper.PrintBmp(bmp);
+//        posApiHelper.PrintStr("  www.androidposkenya.com\n");
+//        posApiHelper.PrintStr("Powered by Renotech Systems\n");
     }
 
     public void autoPrint() {
@@ -744,18 +863,10 @@ import vpos.apipackage.StringUtil;
                     case AUTO_PRINT:
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
                         posApiHelper.PrintStr("        \n");
-//                        posApiHelper.PrintStr("ENTETAINER TRUCKS CO. LTD\n");
-//                        posApiHelper.PrintStr("SHELL ELDORET NAIROBI ROAD");
-//                        posApiHelper.PrintStr("KAPSOYA, KENYA");
-//                        posApiHelper.PrintStr("TILL BUY GOODS 202742");
-                        posApiHelper.PrintStr("________________________________\n");
-                        posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
-                        posApiHelper.PrintStr("________________________________\n");
+                        cHeader();
                         posApiHelper.PrintStr( newText + "\n");
-                        posApiHelper.PrintStr("________________________________\n");
-//                        posApiHelper.PrintStr("Urban Point Restaurant CBD\n");
-//                        posApiHelper.PrintStr("TILL NUMBER: 9150451\n");
-//                        posApiHelper.PrintStr("Beyond Luxury & Hospitality\n");
+//                        cFooter();
+//                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -797,17 +908,9 @@ import vpos.apipackage.StringUtil;
                         /*Full line == 30 characters*/
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
                         posApiHelper.PrintStr("        \n");
-//                        posApiHelper.PrintStr("ENTETAINER TRUCKS CO. LTD\n");
-//                        posApiHelper.PrintStr("SHELL ELDORET NAIROBI ROAD");
-//                        posApiHelper.PrintStr("KAPSOYA, KENYA");
-//                        posApiHelper.PrintStr("TILL BUY GOODS 202742");
-                        posApiHelper.PrintStr("________________________________\n");
-                        posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
-                        posApiHelper.PrintStr("________________________________\n");
+                        cHeader();
                         posApiHelper.PrintStr(ss + "\n" + text + "\n");
-                        posApiHelper.PrintStr("________________________________\n");
-//                        posApiHelper.PrintStr("TILL NUMBER: 9150451\n");
-//                        posApiHelper.PrintStr("Beyond Luxury & Hospitality\n");
+//                        cFooter();
                         posApiHelper.PrintStr("        \n");
 
                         /**
@@ -816,6 +919,7 @@ import vpos.apipackage.StringUtil;
                         posApiHelper.PrintStr(ss + "\n" + ext_text + "\n");
                         */
 
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");

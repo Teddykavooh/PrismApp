@@ -39,6 +39,10 @@
         app:showAsAction="never"
         android:visible="false"/>
     <item
+        android:title="Default Activity"
+        android:onClick="mkDefault"
+        app:showAsAction="never"/>
+    <item
         android:title="@string/exit"
         android:id="@+id/exit"
         app:showAsAction="never"/>

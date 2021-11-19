@@ -3,6 +3,7 @@
     package="com.prisms.smsapp1">
 
     <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
 <!--    Print Permissions-->
@@ -19,7 +20,7 @@
         <activity android:name=".MainActivity" android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <category android:name="android.app.role.SMS"/>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
@@ -36,6 +37,21 @@
 
             </intent-filter>
         </receiver>
+
+        <!-- Activity that allows the user to send new SMS/MMS messages -->
+        <activity android:name=".ComposeSmsActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sms" />
+                <data android:scheme="mms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+        </activity>
 
         <receiver android:name=".MmsBroadcastReceiver"
             android:exported="true"
