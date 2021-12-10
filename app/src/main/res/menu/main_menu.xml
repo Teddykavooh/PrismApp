@@ -24,10 +24,14 @@
         android:id="@+id/printerOff"
         app:showAsAction="never" />
     <item
+        android:title="Default Activity"
+        android:onClick="mkDefault"
+        app:showAsAction="never"/>
+    <item
         android:title="Receipt Style"
         android:id="@+id/recStyle"
         android:onClick="onStyle"
-        android:visible="false"
+        android:visible="true"
         app:showAsAction="never"/>
     <item
         android:title="Print Logo"
@@ -38,10 +42,6 @@
         android:onClick="onAbout"
         app:showAsAction="never"
         android:visible="false"/>
-    <item
-        android:title="Default Activity"
-        android:onClick="mkDefault"
-        app:showAsAction="never"/>
     <item
         android:title="@string/exit"
         android:id="@+id/exit"

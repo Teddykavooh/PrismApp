@@ -25,7 +25,8 @@
             </intent-filter>
 
         </activity>
-        <activity android:name=".AboutActivity"/>
+        <activity android:name=".AboutActivity" android:theme="@style/AppTheme2"/>
+        <activity android:name=".ReceiptStyleActivity" android:theme="@style/AppTheme2"/>
 
         <receiver android:name=".SmsBroadcastReceiver" android:exported="true"
             android:enabled="true" android:permission="android.permission.BROADCAST_SMS">

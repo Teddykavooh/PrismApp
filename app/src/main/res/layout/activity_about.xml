@@ -8,6 +8,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_margin="5dp">
         <TextView
             android:layout_width="wrap_content"
@@ -112,15 +113,30 @@
             app:drawableTint="@color/colorAccent"
             android:textColor="#000" />
 
-        <Button
-            android:layout_width="60dp"
+<!--        <Button-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="10dp"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_below="@+id/caut"-->
+<!--            android:onClick="onArrBack"-->
+<!--            android:background="@drawable/ic_baseline_arrow_back_24"-->
+<!--            android:drawableTint="#000"-->
+<!--            android:layout_alignParentRight="true" />-->
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:layout_below="@+id/caut"
+            android:text="Back"
             android:onClick="onArrBack"
-            android:background="@drawable/ic_baseline_arrow_back_24"
-            android:layout_alignParentRight="true" />
+            android:labelFor="@+id/styleB"
+            android:textColor="#000"
+            android:layout_below="@+id/caut"
+            android:clickable="true"
+            android:focusable="true"
+            app:drawableTopCompat="@drawable/ic_baseline_arrow_back_24"
+            app:drawableTint="#000" />
 
 <!--        <TextView-->
 <!--            android:layout_width="wrap_content"-->

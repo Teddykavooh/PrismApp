@@ -56,10 +56,10 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                     context.getContentResolver().insert(uri, values);
                 }
 
-                MainActivity inst = MainActivity.instance();
+                /*MainActivity inst = MainActivity.instance();
                 inst.updateInbox(smsMessageStr.toString());
                 inst.refreshSmsInbox();
-                inst.refreshSmsInbox();
+                inst.refreshSmsInbox();*/
             }
 
             /* Notification Tone */

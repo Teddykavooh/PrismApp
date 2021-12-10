@@ -1,72 +1,68 @@
  package com.prisms.smsapp1;
 
-import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.role.RoleManager;
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.provider.Settings;
-import android.provider.Telephony;
-import android.text.Layout;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.StyleSpan;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+ import android.Manifest;
+ import android.animation.Animator;
+ import android.animation.AnimatorListenerAdapter;
+ import android.annotation.SuppressLint;
+ import android.app.Activity;
+ import android.app.AlertDialog;
+ import android.app.role.RoleManager;
+ import android.content.BroadcastReceiver;
+ import android.content.ContentResolver;
+ import android.content.Context;
+ import android.content.DialogInterface;
+ import android.content.Intent;
+ import android.content.IntentFilter;
+ import android.content.SharedPreferences;
+ import android.content.pm.PackageManager;
+ import android.content.pm.ResolveInfo;
+ import android.database.Cursor;
+ import android.graphics.Bitmap;
+ import android.graphics.BitmapFactory;
+ import android.graphics.Typeface;
+ import android.graphics.drawable.Drawable;
+ import android.net.Uri;
+ import android.os.Build;
+ import android.os.Bundle;
+ import android.os.Handler;
+ import android.os.Message;
+ import android.provider.Settings;
+ import android.provider.Telephony;
+ import android.text.SpannableString;
+ import android.text.Spanned;
+ import android.text.style.StyleSpan;
+ import android.util.Log;
+ import android.view.KeyEvent;
+ import android.view.Menu;
+ import android.view.MenuInflater;
+ import android.view.MenuItem;
+ import android.view.View;
+ import android.view.WindowManager;
+ import android.widget.AdapterView;
+ import android.widget.ArrayAdapter;
+ import android.widget.Button;
+ import android.widget.ListView;
+ import android.widget.RelativeLayout;
+ import android.widget.TextView;
+ import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
+ import androidx.annotation.NonNull;
+ import androidx.annotation.RequiresApi;
+ import androidx.appcompat.app.AppCompatActivity;
+ import androidx.core.app.ActivityCompat;
+ import androidx.core.content.ContextCompat;
+ import androidx.core.content.res.ResourcesCompat;
 
-import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+ import java.util.ArrayList;
+ import java.util.Comparator;
+ import java.util.Date;
+ import java.util.List;
+ import java.util.Objects;
 
-import vpos.apipackage.PosApiHelper;
-import vpos.apipackage.PrintInitException;
-import vpos.apipackage.StringUtil;
+ import vpos.apipackage.PosApiHelper;
+ import vpos.apipackage.PrintInitException;
 
  public class MainActivity extends AppCompatActivity implements AppsDialog.OnAppSelectedListener {
     ArrayList<String> smsMessagesList = new ArrayList<>();
@@ -105,13 +101,9 @@ import vpos.apipackage.StringUtil;
     final int AUTO_PRINT = 3;
     int powerLaunch = 0;
     /*Print focus ends*/
-
-    /*Header and Footer*/
     SharedPreferences myData;
-    EditText header;
-    EditText footer;
-    String myHeader;
-    String myFooter;
+    private String spHeader;
+    private String spFooter;
     RelativeLayout myLay;
 
     /*Intercepting messages.*/
@@ -155,12 +147,14 @@ import vpos.apipackage.StringUtil;
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle("Delete")
                         .setMessage("All threads will be deleted")
-                        .setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //code that will be run if someone chooses delete
+                        .setPositiveButton("DELETE", (dialogInterface, i) -> {
+                            //code that will be run if someone chooses delete
+                            if (deleteAll()) {
                                 smsMessagesList.clear();
                                 arrayAdapter.notifyDataSetChanged();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Delete all failed.",
+                                        Toast.LENGTH_SHORT).show();
                             }
                         })
                         .setNegativeButton("CANCEL", null)
@@ -197,7 +191,7 @@ import vpos.apipackage.StringUtil;
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("1616e85ee3460106")) {
+        if (deviceId.equals("e93de44638120ecb")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -210,21 +204,10 @@ import vpos.apipackage.StringUtil;
 
     //Printer Activation and Deactivation
     public void printOn(MenuItem i) {
-        if (deviceId.equals("1616e85ee3460106")) {
-            /*fcf52d5c63cb4676
-            b13b0963dbe71031
-            3863953cd3aa6c72
-            e0b3589df8892489
-            3a451f2174d4ca7d
-            4904a7cca0cc1137
-            f98bd30b734fa68f
-            fa01aeb6ee83738e
-            75a07457a9ced030
-            95cf6692d153873a
-            * e0b3589df8892489
-            * 3a451f2174d4ca7d
-            * 3863953cd3aa6c72*/
-            /*Default:fcf52d5c63cb4676*/
+        if (deviceId.equals("e93de44638120ecb")) {
+            //90c59309ec302f3e
+            /*Default:fcf52d5c63cb4676
+            * 1fc74ff9a9ebb122*/
             /*set Power ON*/
             powerLaunch = 1;
             PosApiHelper.getInstance().SysSetPower(powerLaunch);
@@ -286,30 +269,53 @@ import vpos.apipackage.StringUtil;
      }
 
     public void onStyle(MenuItem i) {
-        myLay.setVisibility(View.VISIBLE);
-        myLay.bringToFront();
-        myLay.invalidate();
+        Intent aboutIntent = new Intent(MainActivity.this, ReceiptStyleActivity.class);
+        startActivity(aboutIntent);
     }
 
-     public void onArrBack2(View v) {
-        myLay.setVisibility(View.INVISIBLE);
+    //Delete all functionality
+     private boolean deleteAll() {
+        boolean isDeleted = false;
+        Uri inboxUri = Uri.parse("content://sms/inbox");
+        Cursor c = getApplicationContext().getContentResolver().query(inboxUri , null, null, null, null);
+         while (c.moveToNext()) {
+            try {
+                // Delete the SMS
+                String pid = c.getString(0); // Get id;
+                String uri = "content://sms/" + pid;
+                getApplicationContext().getContentResolver().delete(Uri.parse(uri),
+                        null, null);
+                isDeleted = true;
+            } catch (Exception e) {
+                isDeleted = false;
+            }
+        }
+        c.close();
+        return isDeleted;
      }
 
-    /*public void onClickPrnOpen(MenuItem i) {
-        //refreshSmsInbox();
-        if (powerLaunch == 1) {
-            if (printThread != null && printThread.isThreadFinished()) {
-                Log.e(tag, "Thread is still running...");
-                return;
+    public void onGetSp() {
+        myData = getSharedPreferences("com.prisms.smsapp1", MODE_PRIVATE);
+        //Log.e("onGetSp: ", "Initiated");
+        String spHeaderi = myData.getString("Header", "");
+        String spFooteri = myData.getString("Footer", "");
+        if (!(spHeaderi.equals("")) ||  !(spFooteri.equals(""))) {
+            spHeader = myData.getString("Header", "");
+            if (!(spHeaderi.equals(""))) {
+                spHeader = myData.getString("Header", "");
+            } else {
+                Toast.makeText(getApplicationContext(), "Header is empty.", Toast.LENGTH_SHORT).show();
             }
-
-            printThread = new Print_Thread(PRINT_OPEN);
-            printThread.start();
+            if (!(spFooteri.equals(""))) {
+                spFooter = myData.getString("Footer", "");
+            } else {
+                Toast.makeText(getApplicationContext(), "Footer is empty.", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(getApplicationContext(), "Activate Print to continue",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "No saved receipt format.", Toast.LENGTH_SHORT).show();
+            //Log.e("onGetSp: ", "Toast should happen");
         }
-    }*/
+    }
 
     public void onPrnOpen() {
         if (powerLaunch == 1) {
@@ -359,9 +365,6 @@ import vpos.apipackage.StringUtil;
         mActivity = MainActivity.this;
 
         myLay = findViewById(R.id.lay2);
-        header = findViewById(R.id.header);
-        footer = findViewById(R.id.footer);
-        myData = getSharedPreferences("com.prisms.smsapp1", MODE_PRIVATE);
 
         messages = findViewById(R.id.messages);
         //input = (EditText) findViewById(R.id.input);
@@ -417,17 +420,36 @@ import vpos.apipackage.StringUtil;
         messages.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final int msgToDelete = i;
+                final int arrToDelete = i;
                 new AlertDialog.Builder(MainActivity.this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle("Delete")
                         .setMessage("This message will be deleted")
-                        .setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                smsMessagesList.remove(msgToDelete);
-                                arrayAdapter.notifyDataSetChanged();
+                        .setPositiveButton("DELETE", (dialogInterface, i1) -> {
+                            String msgToDelete = (String) ((TextView) view).getText();
+                            String newStrId = StringUtils.substringBetween(msgToDelete, "REF: ", "From: ");
+//                                Log.e("onLongClick i ", "This is idStr: " + newStrId);
+                            int newId = Integer.parseInt(newStrId.trim());
+//                                Log.e("onLongClick i ", "This is idInt: " + newId);
+                            ContentResolver contentResolver = getContentResolver();
+                            Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"),
+                                    null, null, null, null);
+                            assert smsInboxCursor != null;
+                            int indexId = smsInboxCursor.getColumnIndex("_id");
+                            if (indexId < 0 || !smsInboxCursor.moveToFirst()) return;
+                            try {
+                                do {
+                                    int id = smsInboxCursor.getInt(indexId);
+                                    if (id == newId) {
+                                        contentResolver.delete(Uri.parse("content://sms/" + id), null, null);
+                                        smsMessagesList.remove(arrToDelete);
+                                        arrayAdapter.notifyDataSetChanged();
+                                    }
+                                } while (smsInboxCursor.moveToNext());
+                            } catch (Exception e) {
+                                Toast.makeText(getApplicationContext(),"Deleting message failed.", Toast.LENGTH_SHORT).show();
                             }
+                            smsInboxCursor.close();
                         })
                         .setNegativeButton("CANCEL", null)
                         .show();
@@ -453,6 +475,7 @@ import vpos.apipackage.StringUtil;
                 onPrnOpen();
             }
         });
+        onGetSp();
     }
 
      /**
@@ -478,16 +501,13 @@ import vpos.apipackage.StringUtil;
                  }
              }
          } else {
+
              //If android version is prior to Android 10
-             selectDefaultSmsPackage();
+             //selectDefaultSmsPackage();
+
+             Intent setSmsAppIntent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+             startActivity(setSmsAppIntent);
          }
-         /*
-             Log.e("msgAppChooser: ", "MsgAppChooser() initiated, isNotDefault," +
-                     " Package name: " + myPackageName);
-         String myPackageName = getPackageName();
-         Intent setSmsAppIntent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
-         setSmsAppIntent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, myPackageName);
-         startActivity(setSmsAppIntent);*/
 
      }
 
@@ -514,6 +534,7 @@ import vpos.apipackage.StringUtil;
          new AppsDialog(this, apps).show();
      }
 
+     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
      public void onAppSelected(AppInfo selectedApp) {
          this.selectedApp = selectedApp;
          Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
@@ -651,7 +672,6 @@ import vpos.apipackage.StringUtil;
         }
     }
 
-    @SuppressLint("Recycle")
     public void refreshSmsInbox() {
         ContentResolver contentResolver = getContentResolver();
         Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"),
@@ -679,9 +699,10 @@ import vpos.apipackage.StringUtil;
                     + "Date: " + date + "\n";
             arrayAdapter.add(str);
 //            System.out.println(str);
-//            System.out.println("My bloody Id: " + smsInboxCursor.getString(indexId));
+            System.out.println("My bloody Id: " + smsInboxCursor.getString(indexId));
             //System.out.println("My count: " + arrayAdapter.getItem(1));
         } while (smsInboxCursor.moveToNext());
+        smsInboxCursor.close();
         //messages.setSelection(arrayAdapter.getCount() - 1);
         /*Cont.*/
         messages.setSelectionFromTop(index, top);
@@ -696,8 +717,8 @@ import vpos.apipackage.StringUtil;
         // TODO Auto-generated method stub
         disableFunctionLaunch(false);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        super.onPause();
         unregisterReceiver(receiver);
+        super.onPause();
     }
 
     @Override
@@ -733,20 +754,22 @@ import vpos.apipackage.StringUtil;
 
     //Custom Print
     public void cHeader() {
-//        posApiHelper.PrintStr("RUBIS KAGWERE\n");
-//        posApiHelper.PrintStr("EMBU");
-//        posApiHelper.PrintStr("KRA PIN: P051619738U");
-        posApiHelper.PrintStr("__________________________________\n");
-        posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
-        posApiHelper.PrintStr("__________________________________\n");
+        if ((spHeader != null)) {
+            posApiHelper.PrintStr(spHeader);
+        } else {
+            posApiHelper.PrintStr("__________________________________\n");
+            posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
+            posApiHelper.PrintStr("__________________________________\n");
+        }
     }
 
     public void cFooter() {
-//        posApiHelper.PrintStr("________________________________\n");
-//        posApiHelper.PrintStr("TILL NUMBER: 696312\n");
-//        posApiHelper.PrintStr("RELAX & REFRESH");
-//        posApiHelper.PrintStr("A PERFECT FAMILY GETAWAY");
-//        posApiHelper.PrintStr("=================================\n");
+        if ((spFooter!= null)) {
+            posApiHelper.PrintStr(spFooter);
+        } else {
+            posApiHelper.PrintStr("=====================\n");
+            posApiHelper.PrintStr("Thank you.\n");
+        }
 //        Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),
 //                R.mipmap.pic);
 //        ret = posApiHelper.PrintBmp(bmp);
@@ -865,7 +888,7 @@ import vpos.apipackage.StringUtil;
                         posApiHelper.PrintStr("        \n");
                         cHeader();
                         posApiHelper.PrintStr( newText + "\n");
-//                        cFooter();
+                        cFooter();
 //                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -910,7 +933,7 @@ import vpos.apipackage.StringUtil;
                         posApiHelper.PrintStr("        \n");
                         cHeader();
                         posApiHelper.PrintStr(ss + "\n" + text + "\n");
-//                        cFooter();
+                        cFooter();
                         posApiHelper.PrintStr("        \n");
 
                         /**
@@ -1044,6 +1067,7 @@ import vpos.apipackage.StringUtil;
         Bundle b = new Bundle();
         b.putString("MSG", strInfo);
         msg.setData(b);
+        //Log.e("SendMsg: ", strInfo);
         handler.sendMessage(msg);
     }
 
@@ -1086,7 +1110,7 @@ import vpos.apipackage.StringUtil;
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         public void onReceive(Context context, Intent intent) {
             voltage_level = Objects.requireNonNull(intent.getExtras()).getInt("level");
-            System.out.println("Battery shitOne" + voltage_level);
+            //System.out.println("Battery shitOne" + voltage_level);
             Log.e("wbw", "current  = " + voltage_level);
             BatteryV = intent.getIntExtra("voltage", 0);
             System.out.println("Battery shitTwo" + BatteryV);
@@ -1101,16 +1125,7 @@ import vpos.apipackage.StringUtil;
     public void ext_bal() {
         String new1 = StringUtils.substringBefore(text, " New ");
         String new2 = StringUtils.substringAfter(text, "Transaction ");
-        Log.e("ext_bal: ", "New Msg: " + new1 + " Transaction " + new2);
+        //Log.e("ext_bal: ", "New Msg: " + new1 + " Transaction " + new2);
         ext_text = new1 + " Transaction " + new2;
-    }
-
-    public void headFootFunc(View v) {
-        myHeader = header.getText().toString();
-        myFooter = footer.getText().toString();
-        SharedPreferences.Editor editor = myData.edit();
-        editor.putString("Header", myHeader);
-        editor.putString("Footer", myFooter);
-        editor.apply();
     }
 }
