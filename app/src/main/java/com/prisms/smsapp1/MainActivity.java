@@ -191,7 +191,7 @@
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("e93de44638120ecb")) {
+        if (deviceId.equals("1fc74ff9a9ebb122")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -204,7 +204,8 @@
 
     //Printer Activation and Deactivation
     public void printOn(MenuItem i) {
-        if (deviceId.equals("e93de44638120ecb")) {
+        if (deviceId.equals("1fc74ff9a9ebb122")) {
+            //samsung:c5f3e16ee3cadd9b
             //90c59309ec302f3e
             /*Default:fcf52d5c63cb4676
             * 1fc74ff9a9ebb122*/
@@ -699,7 +700,7 @@
                     + "Date: " + date + "\n";
             arrayAdapter.add(str);
 //            System.out.println(str);
-            System.out.println("My bloody Id: " + smsInboxCursor.getString(indexId));
+            //System.out.println("My bloody Id: " + smsInboxCursor.getString(indexId));
             //System.out.println("My count: " + arrayAdapter.getItem(1));
         } while (smsInboxCursor.moveToNext());
         smsInboxCursor.close();

@@ -33,11 +33,11 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 String format = intentExtras.getString("format");
                 SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) sm, format);
 
-                String smsBody = smsMessage.getMessageBody();
+                /*String smsBody = smsMessage.getMessageBody();
                 String address = smsMessage.getOriginatingAddress();
                 int smsIndex = smsMessage.getIndexOnIcc();
                 long smsTime = smsMessage.getTimestampMillis();
-                Date date = new Date(smsTime);
+                Date date = new Date(smsTime);*/
 
                 /*smsMessageStr.append("REF: ").append(smsIndex).append("\n");
                 smsMessageStr.append("From: ").append(address).append("\n");
@@ -47,11 +47,11 @@ public class SmsBroadcastReceiver extends BroadcastReceiver {
                 //Save to inbox if message is delivered
                 final String action = intent.getAction();
                 if (ACTION_SMS_NEW.equals(action)) {
-                    values.put("address", address); // phone number to send
-                    values.put("date", smsTime);
+                    values.put("address", smsMessage.getOriginatingAddress()); // phone number to send
+                    values.put("date", smsMessage.getTimestampMillis());
                     values.put("read", "1"); // if you want to mark it as unread set to 0
                     values.put("type", "1"); // 2 means sent message
-                    values.put("body", smsBody);
+                    values.put("body", smsMessage.getMessageBody());
                     Uri uri = Uri.parse("content://sms/");
                     context.getContentResolver().insert(uri, values);
                 }
