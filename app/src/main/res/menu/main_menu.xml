@@ -12,20 +12,26 @@
         android:onClick="licenceCheck"
         app:showAsAction="never"/>
     <item
+        android:title="Refresh Inbox"
+        android:id="@+id/refreshInbox"
+        android:onClick="refreshInbox"
+        app:showAsAction="never"/>
+    <item
         android:title="Activate Printer"
-        android:onClick="printOn"
+        android:onClick="prnAct"
         android:id="@+id/printerOn"
         app:showAsAction="never"/>
 
     <item
         android:title="Deactivate Printer"
-        android:onClick="printOff"
+        android:onClick="prnDeAct"
         android:visible="false"
         android:id="@+id/printerOff"
         app:showAsAction="never" />
     <item
         android:title="Default Activity"
         android:onClick="mkDefault"
+        android:visible="true"
         app:showAsAction="never"/>
     <item
         android:title="Receipt Style"

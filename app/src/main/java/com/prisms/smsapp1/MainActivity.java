@@ -191,7 +191,7 @@
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("1fc74ff9a9ebb122")) {
+        if (deviceId.equals("5c9be131685b5af0")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -202,10 +202,29 @@
         }
     }
 
+     public void refreshInbox(MenuItem i) {
+         refreshSmsInbox();
+     }
+
     //Printer Activation and Deactivation
-    public void printOn(MenuItem i) {
-        if (deviceId.equals("1fc74ff9a9ebb122")) {
-            //samsung:c5f3e16ee3cadd9b
+     public void prnAct(MenuItem i) {
+        printOn();
+     }
+
+     public void prnDeAct(MenuItem i) {
+         printOff();
+         prnDea.setVisibility(View.INVISIBLE);
+         prnAct.setVisibility(View.VISIBLE);
+         Toast.makeText(getApplicationContext(), "Print deactivated.",
+                 Toast.LENGTH_SHORT).show();
+         invalidateOptionsMenu();
+//        b1.setVisibility(View.INVISIBLE);
+     }
+
+    public void printOn() {
+        if (deviceId.equals("5c9be131685b5af0")) {
+            //samsung:c5f3e16ee3cadd9b bcc01e9aa182535c
+            //84388320c5dbd014
             //90c59309ec302f3e
             /*Default:fcf52d5c63cb4676
             * 1fc74ff9a9ebb122*/
@@ -231,16 +250,10 @@
         }
     }
 
-    public void printOff(MenuItem i) {
+    public void printOff() {
         /*set Power OFF*/
         powerLaunch = 0;
         PosApiHelper.getInstance().SysSetPower(powerLaunch);
-        prnDea.setVisibility(View.INVISIBLE);
-        prnAct.setVisibility(View.VISIBLE);
-        Toast.makeText(getApplicationContext(), "Print deactivated.",
-                Toast.LENGTH_SHORT).show();
-        invalidateOptionsMenu();
-//        b1.setVisibility(View.INVISIBLE);
 
     }
 
@@ -264,6 +277,7 @@
         startActivity(aboutIntent);
     }
 
+     /* Default app activity */
      @RequiresApi(api = Build.VERSION_CODES.N)
      public void mkDefault(MenuItem i) {
          msgAppChooser();
@@ -279,8 +293,10 @@
         boolean isDeleted = false;
         Uri inboxUri = Uri.parse("content://sms/inbox");
         Cursor c = getApplicationContext().getContentResolver().query(inboxUri , null, null, null, null);
-         while (c.moveToNext()) {
-            try {
+         while (true) {
+             assert c != null;
+             if (!c.moveToNext()) break;
+             try {
                 // Delete the SMS
                 String pid = c.getString(0); // Get id;
                 String uri = "content://sms/" + pid;
@@ -358,7 +374,7 @@
 
         //Get Verifier
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        System.out.println(deviceId);
+        Log.e("onCreate ", "This is: " + deviceId);
         setContentView(R.layout.activity_main);
 
         // Get the application context
@@ -477,6 +493,7 @@
             }
         });
         onGetSp();
+        printOn();
     }
 
      /**
@@ -594,6 +611,10 @@
         arrayAdapter.insert(smsMessage, 0);
         arrayAdapter.notifyDataSetChanged();
     }
+
+     public void updateInboxN() {
+         arrayAdapter.notifyDataSetChanged();
+     }
 
     /*Bringing up our runtime permission requests.*/
     protected void checkPermission(){
@@ -753,7 +774,10 @@
         sendBroadcast(disablePowerKeyIntent);
     }
 
-    //Custom Print
+     /**
+      * Custom Print
+      */
+
     public void cHeader() {
         if ((spHeader != null)) {
             posApiHelper.PrintStr(spHeader);
@@ -778,12 +802,39 @@
 //        posApiHelper.PrintStr("Powered by Renotech Systems\n");
     }
 
-    public void autoPrint() {
-//        System.out.println("New dataFour: " + arrayAdapter.getItem(0)); /*Working well*/
-        newText = arrayAdapter.getItem(0);
-        refreshSmsInbox();
+    /**
+     * New auto print logic
+    */
+    public void autoP(long timestamp) {
+
+        ContentResolver contentResolver = getContentResolver();
+        Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"),
+                null, /*String.valueOf(timestamp)*/null, null, null);
+        assert smsInboxCursor != null;
+        smsInboxCursor.moveToFirst();
+        int indexBody = smsInboxCursor.getColumnIndex("body");
+        int indexAddress = smsInboxCursor.getColumnIndex("address");
+        int indexDate = smsInboxCursor.getColumnIndex("date");
+        int indexId = smsInboxCursor.getColumnIndex("_id");
+        do {
+            long timeMillis = smsInboxCursor.getLong(indexDate);
+            Date date = new Date(timeMillis);
+            if (timeMillis == timestamp) {
+                newText = "REF: " + smsInboxCursor.getString(indexId) + "\n"
+                        + "From: " + smsInboxCursor.getString(indexAddress) + "\n"
+                        + smsInboxCursor.getString(indexBody) + "\n"
+                        + "Date: " + date + "\n";
+            } /*else {
+                Toast.makeText(getApplicationContext(), "SMS not found, try default activity " +
+                        "in menu", Toast.LENGTH_SHORT).show();
+                break;
+            }*/
+            Log.e("autoP ", "timeMillis: " + timeMillis );
+            Log.e("autoP ", "timestamp: " + timestamp);
+        } while (smsInboxCursor.moveToNext());
+        smsInboxCursor.close();
+//        Log.e("autoP: ", "AutoP "+ newText);
         if (powerLaunch == 1) {
-            refreshSmsInbox();
             if (printThread != null && printThread.isThreadFinished()) {
                 Log.e(tag, "Thread is still running...");
                 return;
@@ -794,7 +845,28 @@
         } else {
             Toast.makeText(getApplicationContext(), "Activate print to engage auto-printing.",
                     Toast.LENGTH_SHORT).show();
-            refreshSmsInbox();
+        }
+    }
+
+     /**
+      * Auto print old logic no longer in use
+      */
+     public void autoPrint() {
+//        System.out.println("New dataFour: " + arrayAdapter.getItem(0)); /*Working well*/
+        updateInboxN();
+        refreshSmsInbox();
+        newText = arrayAdapter.getItem(0);
+        if (powerLaunch == 1) {
+            if (printThread != null && printThread.isThreadFinished()) {
+                Log.e(tag, "Thread is still running...");
+                return;
+            }
+
+            printThread = new Print_Thread(AUTO_PRINT);
+            printThread.start();
+        } else {
+            Toast.makeText(getApplicationContext(), "Activate print to engage auto-printing.",
+                    Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -1010,8 +1082,11 @@
                         Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),
                                 R.mipmap.pic);
                         ret = posApiHelper.PrintBmp(bmp);
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("  www.androidposkenya.com\n");
                         posApiHelper.PrintStr("Powered by Renotech Systems\n");
+                        posApiHelper.PrintStr("        \n");
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
