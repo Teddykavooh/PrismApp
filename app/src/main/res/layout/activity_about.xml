@@ -8,6 +8,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_margin="5dp">
         <TextView
             android:layout_width="wrap_content"
@@ -18,7 +19,8 @@
             android:layout_marginBottom="20dp"
             android:layout_centerHorizontal="true"
             android:id="@+id/abt"
-            android:textSize="16sp"/>
+            android:textSize="20sp"
+            android:textColor="#000"/>
 
         <TextView
             android:id="@+id/terms"
@@ -29,7 +31,8 @@
             android:gravity="center_horizontal"
             android:layout_below="@+id/abt"
             android:layout_marginBottom="20dp"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="#000"/>
 
         <TextView
             android:id="@+id/devH"
@@ -40,7 +43,8 @@
             android:layout_marginBottom="20dp"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/terms"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="#000"/>
 
         <TextView
             android:id="@+id/dev1"
@@ -51,7 +55,8 @@
             android:gravity="center_horizontal"
             android:layout_below="@+id/devH"
             android:layout_marginBottom="20dp"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="#000"/>
 
         <TextView
             android:id="@+id/dev2"
@@ -62,7 +67,8 @@
             android:gravity="center_horizontal"
             android:layout_below="@+id/dev1"
             android:layout_marginBottom="20dp"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="#000"/>
 
         <CheckBox
             android:layout_width="match_parent"
@@ -89,7 +95,9 @@
             android:layout_below="@+id/checkbox"
             android:textSize="16sp"
             app:drawableLeftCompat="@drawable/ic_baseline_thumb_up_24"
-            app:drawableTint="@color/colorPrimary"/>
+            app:drawableTint="@color/colorAccent"
+            android:drawablePadding="7dp"
+            android:textColor="#000"/>
 
         <TextView
             android:id="@+id/caut"
@@ -102,7 +110,40 @@
             android:layout_below="@+id/thank"
             android:textSize="16sp"
             app:drawableLeftCompat="@drawable/ic_baseline_warning_24"
-            app:drawableTint="@color/colorPrimary"/>
+            app:drawableTint="@color/colorAccent"
+            android:textColor="#000" />
+
+<!--        <Button-->
+<!--            android:layout_width="60dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_margin="10dp"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_below="@+id/caut"-->
+<!--            android:onClick="onArrBack"-->
+<!--            android:background="@drawable/ic_baseline_arrow_back_24"-->
+<!--            android:drawableTint="#000"-->
+<!--            android:layout_alignParentRight="true" />-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:text="Back"
+            android:onClick="onArrBack"
+            android:labelFor="@+id/styleB"
+            android:textColor="#000"
+            android:layout_below="@+id/caut"
+            android:clickable="true"
+            android:focusable="true"
+            app:drawableTopCompat="@drawable/ic_baseline_arrow_back_24"
+            app:drawableTint="#000" />
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_alignParentRight="true"-->
+<!--            android:text="Back"-->
+<!--            android:textStyle="bold"/>-->
 
     </RelativeLayout>
 </ScrollView>

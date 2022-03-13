@@ -1,61 +1,70 @@
  package com.prisms.smsapp1;
 
-import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Typeface;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.provider.Settings;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.StyleSpan;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
+ import android.Manifest;
+ import android.animation.Animator;
+ import android.animation.AnimatorListenerAdapter;
+ import android.annotation.SuppressLint;
+ import android.app.Activity;
+ import android.app.AlertDialog;
+ import android.app.role.RoleManager;
+ import android.content.BroadcastReceiver;
+ import android.content.ContentResolver;
+ import android.content.Context;
+ import android.content.DialogInterface;
+ import android.content.Intent;
+ import android.content.IntentFilter;
+ import android.content.SharedPreferences;
+ import android.content.pm.PackageManager;
+ import android.content.pm.ResolveInfo;
+ import android.database.Cursor;
+ import android.graphics.Bitmap;
+ import android.graphics.BitmapFactory;
+ import android.graphics.Typeface;
+ import android.graphics.drawable.Drawable;
+ import android.net.Uri;
+ import android.os.Build;
+ import android.os.Bundle;
+ import android.os.Handler;
+ import android.os.Message;
+ import android.provider.Settings;
+ import android.provider.Telephony;
+ import android.text.SpannableString;
+ import android.text.Spanned;
+ import android.text.style.StyleSpan;
+ import android.util.Log;
+ import android.view.KeyEvent;
+ import android.view.Menu;
+ import android.view.MenuInflater;
+ import android.view.MenuItem;
+ import android.view.View;
+ import android.view.WindowManager;
+ import android.widget.AdapterView;
+ import android.widget.ArrayAdapter;
+ import android.widget.Button;
+ import android.widget.ListView;
+ import android.widget.RelativeLayout;
+ import android.widget.TextView;
+ import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
+ import androidx.annotation.NonNull;
+ import androidx.annotation.RequiresApi;
+ import androidx.appcompat.app.AppCompatActivity;
+ import androidx.core.app.ActivityCompat;
+ import androidx.core.content.ContextCompat;
+ import androidx.core.content.res.ResourcesCompat;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Objects;
+ import org.apache.commons.lang3.StringUtils;
 
-import vpos.apipackage.PosApiHelper;
-import vpos.apipackage.PrintInitException;
+ import java.util.ArrayList;
+ import java.util.Comparator;
+ import java.util.Date;
+ import java.util.List;
+ import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+ import vpos.apipackage.PosApiHelper;
+ import vpos.apipackage.PrintInitException;
+
+ public class MainActivity extends AppCompatActivity implements AppsDialog.OnAppSelectedListener {
     ArrayList<String> smsMessagesList = new ArrayList<>();
     ListView messages;
     ArrayAdapter<String> arrayAdapter;
@@ -81,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     private String newText;
     private String deviceId;
     SharedPreferences prismAppSp;
+    String ext_text;
 
     /*Print focus*/
     PosApiHelper posApiHelper = PosApiHelper.getInstance();
@@ -91,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
     final int AUTO_PRINT = 3;
     int powerLaunch = 0;
     /*Print focus ends*/
+    SharedPreferences myData;
+    private String spHeader;
+    private String spFooter;
+    RelativeLayout myLay;
 
     /*Intercepting messages.*/
 
@@ -127,22 +141,20 @@ public class MainActivity extends AppCompatActivity {
         super.onOptionsItemSelected(item);
 
         switch (item.getItemId()) {
-            case R.id.fileExplorer:
-                Toast.makeText(getApplicationContext(), "File Explorer, more...",
-                        Toast.LENGTH_SHORT).show();
-                return  true;
             case R.id.delete:
                 //delete alert Dialog
                 new AlertDialog.Builder(this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle("Delete")
                         .setMessage("All threads will be deleted")
-                        .setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                //code that will be run if someone chooses delete
+                        .setPositiveButton("DELETE", (dialogInterface, i) -> {
+                            //code that will be run if someone chooses delete
+                            if (deleteAll()) {
                                 smsMessagesList.clear();
                                 arrayAdapter.notifyDataSetChanged();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Delete all failed.",
+                                        Toast.LENGTH_SHORT).show();
                             }
                         })
                         .setNegativeButton("CANCEL", null)
@@ -179,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("dd39775621b4b422")) {
+        if (deviceId.equals("5c9be131685b5af0")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -190,10 +202,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+     public void refreshInbox(MenuItem i) {
+         refreshSmsInbox();
+     }
+
     //Printer Activation and Deactivation
-    public void printOn(MenuItem i) {
-        if (deviceId.equals("dd39775621b4b422")) {
-            /*Default:e7171c1fe9945676*/
+     public void prnAct(MenuItem i) {
+        printOn();
+     }
+
+     public void prnDeAct(MenuItem i) {
+         printOff();
+         prnDea.setVisibility(View.INVISIBLE);
+         prnAct.setVisibility(View.VISIBLE);
+         Toast.makeText(getApplicationContext(), "Print deactivated.",
+                 Toast.LENGTH_SHORT).show();
+         invalidateOptionsMenu();
+//        b1.setVisibility(View.INVISIBLE);
+     }
+
+    public void printOn() {
+        if (deviceId.equals("5c9be131685b5af0")) {
+            //samsung:c5f3e16ee3cadd9b bcc01e9aa182535c
+            //84388320c5dbd014
+            //90c59309ec302f3e
+            /*Default:fcf52d5c63cb4676
+            * 1fc74ff9a9ebb122*/
             /*set Power ON*/
             powerLaunch = 1;
             PosApiHelper.getInstance().SysSetPower(powerLaunch);
@@ -216,16 +250,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void printOff(MenuItem i) {
+    public void printOff() {
         /*set Power OFF*/
         powerLaunch = 0;
         PosApiHelper.getInstance().SysSetPower(powerLaunch);
-        prnDea.setVisibility(View.INVISIBLE);
-        prnAct.setVisibility(View.VISIBLE);
-        Toast.makeText(getApplicationContext(), "Print deactivated.",
-                Toast.LENGTH_SHORT).show();
-        invalidateOptionsMenu();
-//        b1.setVisibility(View.INVISIBLE);
 
     }
 
@@ -244,34 +272,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onClickBmp2() {
-        if (powerLaunch == 1) {
-            if (printThread != null && printThread.isThreadFinished()) {
-                Log.e(tag, "Thread is still running...");
-                return;
-            }
-
-            printThread = new Print_Thread(PRINT_BMP);
-            printThread.start();
-        } else {
-            Toast.makeText(getApplicationContext(), "Activate Print to continue",
-                    Toast.LENGTH_SHORT).show();
-        }
+    public void onAbout(MenuItem i) {
+        Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
+        startActivity(aboutIntent);
     }
 
-    public void onClickPrnOpen(MenuItem i) {
-        //refreshSmsInbox();
-        if (powerLaunch == 1) {
-            if (printThread != null && printThread.isThreadFinished()) {
-                Log.e(tag, "Thread is still running...");
-                return;
-            }
+     /* Default app activity */
+     @RequiresApi(api = Build.VERSION_CODES.N)
+     public void mkDefault(MenuItem i) {
+         msgAppChooser();
+     }
 
-            printThread = new Print_Thread(PRINT_OPEN);
-            printThread.start();
+    public void onStyle(MenuItem i) {
+        Intent aboutIntent = new Intent(MainActivity.this, ReceiptStyleActivity.class);
+        startActivity(aboutIntent);
+    }
+
+    //Delete all functionality
+     private boolean deleteAll() {
+        boolean isDeleted = false;
+        Uri inboxUri = Uri.parse("content://sms/inbox");
+        Cursor c = getApplicationContext().getContentResolver().query(inboxUri , null, null, null, null);
+         while (true) {
+             assert c != null;
+             if (!c.moveToNext()) break;
+             try {
+                // Delete the SMS
+                String pid = c.getString(0); // Get id;
+                String uri = "content://sms/" + pid;
+                getApplicationContext().getContentResolver().delete(Uri.parse(uri),
+                        null, null);
+                isDeleted = true;
+            } catch (Exception e) {
+                isDeleted = false;
+            }
+        }
+        c.close();
+        return isDeleted;
+     }
+
+    public void onGetSp() {
+        myData = getSharedPreferences("com.prisms.smsapp1", MODE_PRIVATE);
+        //Log.e("onGetSp: ", "Initiated");
+        String spHeaderi = myData.getString("Header", "");
+        String spFooteri = myData.getString("Footer", "");
+        if (!(spHeaderi.equals("")) ||  !(spFooteri.equals(""))) {
+            spHeader = myData.getString("Header", "");
+            if (!(spHeaderi.equals(""))) {
+                spHeader = myData.getString("Header", "");
+            } else {
+                Toast.makeText(getApplicationContext(), "Header is empty.", Toast.LENGTH_SHORT).show();
+            }
+            if (!(spFooteri.equals(""))) {
+                spFooter = myData.getString("Footer", "");
+            } else {
+                Toast.makeText(getApplicationContext(), "Footer is empty.", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(getApplicationContext(), "Activate Print to continue",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "No saved receipt format.", Toast.LENGTH_SHORT).show();
+            //Log.e("onGetSp: ", "Toast should happen");
         }
     }
 
@@ -315,12 +374,14 @@ public class MainActivity extends AppCompatActivity {
 
         //Get Verifier
         deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        System.out.println(deviceId);
+        Log.e("onCreate ", "This is: " + deviceId);
         setContentView(R.layout.activity_main);
 
         // Get the application context
         mContext = getApplicationContext();
         mActivity = MainActivity.this;
+
+        myLay = findViewById(R.id.lay2);
 
         messages = findViewById(R.id.messages);
         //input = (EditText) findViewById(R.id.input);
@@ -354,14 +415,12 @@ public class MainActivity extends AppCompatActivity {
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     /* Converting listView element to string. */
                                     text = (String) ((TextView) view).getText();
-                                    //Debug
-                                    /*
-                                    System.out.println("Hello my sms: " + text);
-                                    System.out.println("Printer Status: " + powerLaunch);
-                                    System.out.println("Selected sms: " + i);
+                                    /**
+                                     * Get without balance
+                                     *
+                                     ext_bal();
                                      */
                                     onClickConsume();
-                                    //onClickBmp2();
                                 }
                             })
                             .setNegativeButton("QUIT", null)
@@ -378,17 +437,36 @@ public class MainActivity extends AppCompatActivity {
         messages.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final int msgToDelete = i;
+                final int arrToDelete = i;
                 new AlertDialog.Builder(MainActivity.this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle("Delete")
                         .setMessage("This message will be deleted")
-                        .setPositiveButton("DELETE", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                smsMessagesList.remove(msgToDelete);
-                                arrayAdapter.notifyDataSetChanged();
+                        .setPositiveButton("DELETE", (dialogInterface, i1) -> {
+                            String msgToDelete = (String) ((TextView) view).getText();
+                            String newStrId = StringUtils.substringBetween(msgToDelete, "REF: ", "From: ");
+//                                Log.e("onLongClick i ", "This is idStr: " + newStrId);
+                            int newId = Integer.parseInt(newStrId.trim());
+//                                Log.e("onLongClick i ", "This is idInt: " + newId);
+                            ContentResolver contentResolver = getContentResolver();
+                            Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"),
+                                    null, null, null, null);
+                            assert smsInboxCursor != null;
+                            int indexId = smsInboxCursor.getColumnIndex("_id");
+                            if (indexId < 0 || !smsInboxCursor.moveToFirst()) return;
+                            try {
+                                do {
+                                    int id = smsInboxCursor.getInt(indexId);
+                                    if (id == newId) {
+                                        contentResolver.delete(Uri.parse("content://sms/" + id), null, null);
+                                        smsMessagesList.remove(arrToDelete);
+                                        arrayAdapter.notifyDataSetChanged();
+                                    }
+                                } while (smsInboxCursor.moveToNext());
+                            } catch (Exception e) {
+                                Toast.makeText(getApplicationContext(),"Deleting message failed.", Toast.LENGTH_SHORT).show();
                             }
+                            smsInboxCursor.close();
                         })
                         .setNegativeButton("CANCEL", null)
                         .show();
@@ -414,7 +492,107 @@ public class MainActivity extends AppCompatActivity {
                 onPrnOpen();
             }
         });
+        onGetSp();
+        printOn();
     }
+
+     /**
+      * method starts an intent that will bring up a prompt for the user
+      * to select their default launcher. It comes up each time method is called.
+      */
+     @RequiresApi(api = Build.VERSION_CODES.N)
+     private void msgAppChooser() {
+         RoleManager roleManager;
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+             roleManager = getApplicationContext().getSystemService(RoleManager.class);
+             if (roleManager.isRoleAvailable(RoleManager.ROLE_SMS)) {
+                 if (roleManager.isRoleHeld(RoleManager.ROLE_SMS)) {
+                     Toast.makeText(getApplicationContext(), "PrismApp set as default.", Toast.LENGTH_SHORT).show();
+                     Intent i = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
+                     startActivity(i);
+//                     Intent intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+//                     intent.setData(Uri.parse("package:" + getPackageName()));
+//                     startActivity(intent);
+                 } else {
+                     Intent roleRequestIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_SMS);
+                     startActivityForResult(roleRequestIntent, 2);
+                 }
+             }
+         } else {
+
+             //If android version is prior to Android 10
+             //selectDefaultSmsPackage();
+
+             Intent setSmsAppIntent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+             startActivity(setSmsAppIntent);
+         }
+
+     }
+
+     //Longer Method
+     private static  final int DEF_SMS_REQ = 0;
+     private AppInfo selectedApp;
+     @RequiresApi(api = Build.VERSION_CODES.N)
+     private void selectDefaultSmsPackage() {
+         @SuppressLint("QueryPermissionsNeeded") final List<ResolveInfo> receivers = getPackageManager().queryBroadcastReceivers(new
+                 Intent(Telephony.Sms.Intents.SMS_DELIVER_ACTION), 0);
+         final ArrayList<AppInfo> apps = new ArrayList<>();
+         for (ResolveInfo info : receivers) {
+             final String packageName = info.activityInfo.packageName;
+             final String appName = getPackageManager().getApplicationLabel(info.activityInfo.applicationInfo).toString();
+             final Drawable icon = getPackageManager().getApplicationIcon(info.activityInfo.applicationInfo);
+             apps.add(new AppInfo(packageName, appName, icon));
+         }
+         apps.sort(new Comparator<AppInfo>() {
+             @Override
+             public int compare(AppInfo app1, AppInfo app2) {
+                 return app1.appName.compareTo(app2.appName);
+             }
+         });
+         new AppsDialog(this, apps).show();
+     }
+
+     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+     public void onAppSelected(AppInfo selectedApp) {
+         this.selectedApp = selectedApp;
+         Intent intent = new Intent(Telephony.Sms.Intents.ACTION_CHANGE_DEFAULT);
+         intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME, selectedApp.packageName);
+         startActivityForResult(intent, DEF_SMS_REQ);
+     }
+
+     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+     @Override
+     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+         super.onActivityResult(requestCode, resultCode, data);
+         if (requestCode == DEF_SMS_REQ) {
+             String currentDefault = Telephony.Sms.getDefaultSmsPackage(this);
+             boolean isDefault = selectedApp.packageName.equals(currentDefault);
+
+             String msg = selectedApp.appName + (isDefault ?
+                     " successfully set as default" :
+                     " not set as default");
+
+             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+         }
+     }
+
+     public static class AppInfo {
+         String appName;
+         String packageName;
+         Drawable icon;
+
+         public AppInfo(String packageName, String appName, Drawable icon) {
+             this.packageName = packageName;
+             this.appName = appName;
+             this.icon = icon;
+         }
+
+         @NonNull
+         @Override
+         public String toString() {
+             return appName;
+         }
+     }
 
     @Override
     protected void onResume() {
@@ -433,6 +611,10 @@ public class MainActivity extends AppCompatActivity {
         arrayAdapter.insert(smsMessage, 0);
         arrayAdapter.notifyDataSetChanged();
     }
+
+     public void updateInboxN() {
+         arrayAdapter.notifyDataSetChanged();
+     }
 
     /*Bringing up our runtime permission requests.*/
     protected void checkPermission(){
@@ -512,7 +694,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressLint("Recycle")
     public void refreshSmsInbox() {
         ContentResolver contentResolver = getContentResolver();
         Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"),
@@ -535,14 +716,15 @@ public class MainActivity extends AppCompatActivity {
             long timeMillis = smsInboxCursor.getLong(indexDate);
             Date date = new Date(timeMillis);
             String str = "REF: " + smsInboxCursor.getString(indexId) + "\n"
-                    + "SMS From: " + smsInboxCursor.getString(indexAddress) + "\n"
+                    + "From: " + smsInboxCursor.getString(indexAddress) + "\n"
                     + smsInboxCursor.getString(indexBody) + "\n"
                     + "Date: " + date + "\n";
             arrayAdapter.add(str);
 //            System.out.println(str);
-//            System.out.println("My bloody Id: " + smsInboxCursor.getString(indexId));
+            //System.out.println("My bloody Id: " + smsInboxCursor.getString(indexId));
             //System.out.println("My count: " + arrayAdapter.getItem(1));
         } while (smsInboxCursor.moveToNext());
+        smsInboxCursor.close();
         //messages.setSelection(arrayAdapter.getCount() - 1);
         /*Cont.*/
         messages.setSelectionFromTop(index, top);
@@ -557,8 +739,8 @@ public class MainActivity extends AppCompatActivity {
         // TODO Auto-generated method stub
         disableFunctionLaunch(false);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        super.onPause();
         unregisterReceiver(receiver);
+        super.onPause();
     }
 
     @Override
@@ -592,12 +774,67 @@ public class MainActivity extends AppCompatActivity {
         sendBroadcast(disablePowerKeyIntent);
     }
 
-    public void autoPrint() {
-//        System.out.println("New dataFour: " + arrayAdapter.getItem(0)); /*Working well*/
-        newText = arrayAdapter.getItem(0);
-        refreshSmsInbox();
+     /**
+      * Custom Print
+      */
+
+    public void cHeader() {
+        if ((spHeader != null)) {
+            posApiHelper.PrintStr(spHeader);
+        } else {
+            posApiHelper.PrintStr("__________________________________\n");
+            posApiHelper.PrintStr("M-PESA PAYMENTS DETAILS\n");
+            posApiHelper.PrintStr("__________________________________\n");
+        }
+    }
+
+    public void cFooter() {
+        if ((spFooter!= null)) {
+            posApiHelper.PrintStr(spFooter);
+        } else {
+            posApiHelper.PrintStr("=====================\n");
+            posApiHelper.PrintStr("Thank you.\n");
+        }
+//        Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),
+//                R.mipmap.pic);
+//        ret = posApiHelper.PrintBmp(bmp);
+//        posApiHelper.PrintStr("  www.androidposkenya.com\n");
+//        posApiHelper.PrintStr("Powered by Renotech Systems\n");
+    }
+
+    /**
+     * New auto print logic
+    */
+    public void autoP(long timestamp) {
+
+        ContentResolver contentResolver = getContentResolver();
+        Cursor smsInboxCursor = contentResolver.query(Uri.parse("content://sms/inbox"),
+                null, /*String.valueOf(timestamp)*/null, null, null);
+        assert smsInboxCursor != null;
+        smsInboxCursor.moveToFirst();
+        int indexBody = smsInboxCursor.getColumnIndex("body");
+        int indexAddress = smsInboxCursor.getColumnIndex("address");
+        int indexDate = smsInboxCursor.getColumnIndex("date");
+        int indexId = smsInboxCursor.getColumnIndex("_id");
+        do {
+            long timeMillis = smsInboxCursor.getLong(indexDate);
+            Date date = new Date(timeMillis);
+            if (timeMillis == timestamp) {
+                newText = "REF: " + smsInboxCursor.getString(indexId) + "\n"
+                        + "From: " + smsInboxCursor.getString(indexAddress) + "\n"
+                        + smsInboxCursor.getString(indexBody) + "\n"
+                        + "Date: " + date + "\n";
+            } /*else {
+                Toast.makeText(getApplicationContext(), "SMS not found, try default activity " +
+                        "in menu", Toast.LENGTH_SHORT).show();
+                break;
+            }*/
+            Log.e("autoP ", "timeMillis: " + timeMillis );
+            Log.e("autoP ", "timestamp: " + timestamp);
+        } while (smsInboxCursor.moveToNext());
+        smsInboxCursor.close();
+//        Log.e("autoP: ", "AutoP "+ newText);
         if (powerLaunch == 1) {
-            refreshSmsInbox();
             if (printThread != null && printThread.isThreadFinished()) {
                 Log.e(tag, "Thread is still running...");
                 return;
@@ -608,7 +845,28 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(getApplicationContext(), "Activate print to engage auto-printing.",
                     Toast.LENGTH_SHORT).show();
-            refreshSmsInbox();
+        }
+    }
+
+     /**
+      * Auto print old logic no longer in use
+      */
+     public void autoPrint() {
+//        System.out.println("New dataFour: " + arrayAdapter.getItem(0)); /*Working well*/
+        updateInboxN();
+        refreshSmsInbox();
+        newText = arrayAdapter.getItem(0);
+        if (powerLaunch == 1) {
+            if (printThread != null && printThread.isThreadFinished()) {
+                Log.e(tag, "Thread is still running...");
+                return;
+            }
+
+            printThread = new Print_Thread(AUTO_PRINT);
+            printThread.start();
+        } else {
+            Toast.makeText(getApplicationContext(), "Activate print to engage auto-printing.",
+                    Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -700,7 +958,11 @@ public class MainActivity extends AppCompatActivity {
 
                     case AUTO_PRINT:
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
+                        posApiHelper.PrintStr("        \n");
+                        cHeader();
                         posApiHelper.PrintStr( newText + "\n");
+                        cFooter();
+//                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -741,24 +1003,19 @@ public class MainActivity extends AppCompatActivity {
                         ss.setSpan(boldSpan, 0, 3, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                         /*Full line == 30 characters*/
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
-                        /*posApiHelper.PrintStr("     FREENALLY INVESTMENTS\n");
-                        posApiHelper.PrintStr("                  LIMITED");
-                        posApiHelper.PrintStr("__________________________________\n");
-                        posApiHelper.PrintStr("           P.O.BOX 92-0057\n");
-                        posApiHelper.PrintStr("                  NAIROBI\n");
-                        posApiHelper.PrintStr("     GALLERIA OILIBYA SERVICE\n");
-                        posApiHelper.PrintStr("                  STATION           \n");*/
                         posApiHelper.PrintStr("        \n");
-                        posApiHelper.PrintStr("        \n");
+                        cHeader();
                         posApiHelper.PrintStr(ss + "\n" + text + "\n");
+                        cFooter();
                         posApiHelper.PrintStr("        \n");
-                        /*posApiHelper.PrintStr("=====================\n");
-                        Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),
-                                R.mipmap.pic);
-                        ret = posApiHelper.PrintBmp(bmp);
-                        posApiHelper.PrintStr("    www.androidposkenya.com\n");
-                        posApiHelper.PrintStr("  Powered by Renotech Systems\n");
-			            posApiHelper.PrintStr("        \n");*/
+
+                        /**
+                         * M-PESA CUT
+                         *
+                        posApiHelper.PrintStr(ss + "\n" + ext_text + "\n");
+                        */
+
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
@@ -825,15 +1082,16 @@ public class MainActivity extends AppCompatActivity {
                         Bitmap bmp = BitmapFactory.decodeResource(MainActivity.this.getResources(),
                                 R.mipmap.pic);
                         ret = posApiHelper.PrintBmp(bmp);
+                        posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("  www.androidposkenya.com\n");
                         posApiHelper.PrintStr("Powered by Renotech Systems\n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
                         posApiHelper.PrintStr("        \n");
+                        posApiHelper.PrintStr("        \n");
+                        posApiHelper.PrintStr("        \n");
                         if (ret == 0) {
                             posApiHelper.PrintStr("\n\n\n");
-                            posApiHelper.PrintStr("                                         \n");
-                            posApiHelper.PrintStr("                                         \n");
 
                             SendMsg("Printing... ");
                             ret = posApiHelper.PrintStart();
@@ -885,6 +1143,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle b = new Bundle();
         b.putString("MSG", strInfo);
         msg.setData(b);
+        //Log.e("SendMsg: ", strInfo);
         handler.sendMessage(msg);
     }
 
@@ -927,7 +1186,7 @@ public class MainActivity extends AppCompatActivity {
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         public void onReceive(Context context, Intent intent) {
             voltage_level = Objects.requireNonNull(intent.getExtras()).getInt("level");
-            System.out.println("Battery shitOne" + voltage_level);
+            //System.out.println("Battery shitOne" + voltage_level);
             Log.e("wbw", "current  = " + voltage_level);
             BatteryV = intent.getIntExtra("voltage", 0);
             System.out.println("Battery shitTwo" + BatteryV);
@@ -936,5 +1195,13 @@ public class MainActivity extends AppCompatActivity {
             //	m_voltage = (int) (65+19*voltage_level/100);
             //   Log.e("wbw","m_voltage  = " + m_voltage );
         }
+    }
+
+    //Remove M-PESA BALANCE
+    public void ext_bal() {
+        String new1 = StringUtils.substringBefore(text, " New ");
+        String new2 = StringUtils.substringAfter(text, "Transaction ");
+        //Log.e("ext_bal: ", "New Msg: " + new1 + " Transaction " + new2);
+        ext_text = new1 + " Transaction " + new2;
     }
 }

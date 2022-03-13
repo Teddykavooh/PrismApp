@@ -18,17 +18,15 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="-1dp"
-        android:layout_marginLeft="-1dp"
-        android:layout_marginTop="29dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginBottom="-29dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
         android:background="@color/colorAccent1"
         android:divider="#ffffff"
-        android:dividerHeight="10.0sp"
-        android:scrollbarSize="10dp"
-        android:scrollbars="vertical"
-        android:layout_marginEnd="5dp" />
+        android:dividerHeight="5dp"
+        android:footerDividersEnabled="true"
+        android:scrollbarSize="5dp"
+        android:scrollbars="vertical" />
 
     <Button
         android:layout_width="match_parent"
@@ -40,15 +38,15 @@
         android:id="@+id/printOn" />
 
     <Button
+        android:id="@+id/printOff"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:background="@color/colorAccent"
-        android:textStyle="bold"
-        android:textColor="@color/white"
         android:text="FEED PAPER"
-        android:id="@+id/printOff"
-        android:visibility="invisible"/>
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:visibility="invisible" />
 
 <!--    <Button-->
 <!--        android:layout_width="50dp"-->
@@ -62,20 +60,21 @@
 <!--        android:id="@+id/prnOpen" />-->
 
     <TextView
+        android:id="@+id/catchErr"
         android:layout_width="200dp"
         android:layout_height="50dp"
-        android:visibility="invisible"
-        android:background="@drawable/rounded_corner"
-        android:textColor="#FFF"
-        android:textStyle="bold"
-        android:textSize="15sp"
-        android:layout_centerInParent="true"
         android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
         android:layout_marginBottom="60dp"
-        android:id="@+id/catchErr"
+        android:background="@drawable/rounded_corner"
         android:gravity="center"
-        app:drawableStartCompat="@drawable/ic_baseline_error_outline_24"
-        android:paddingLeft="25dp"
         android:paddingStart="25dp"
-        android:paddingEnd="25dp" />
+        android:paddingLeft="25dp"
+        android:paddingEnd="25dp"
+        android:textColor="#FFF"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        app:drawableStartCompat="@drawable/ic_baseline_error_outline_24" />
+
 </RelativeLayout>
