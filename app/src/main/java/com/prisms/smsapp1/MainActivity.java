@@ -191,7 +191,7 @@
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("5c9be131685b5af0")) {
+        if (deviceId.equals("98a8b9fe244755d6")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
             //System.out.println("Device ID: " + deviceId);
@@ -222,7 +222,7 @@
      }
 
     public void printOn() {
-        if (deviceId.equals("5c9be131685b5af0")) {
+        if (deviceId.equals("98a8b9fe244755d6")) {
             //samsung:c5f3e16ee3cadd9b bcc01e9aa182535c
             //84388320c5dbd014
             //90c59309ec302f3e
