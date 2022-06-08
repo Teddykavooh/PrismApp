@@ -194,11 +194,9 @@
         if (deviceId.equals("")) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
-            //System.out.println("Device ID: " + deviceId);
         } else {
-            Toast.makeText(getApplicationContext(), "You are unlicensed.",
-                    Toast.LENGTH_SHORT).show();
-            //System.out.println("Device ID: " + deviceId);
+            Toast.makeText(getApplicationContext(), "You are unlicensed.\n" +
+                    "Your license is: " + deviceId, Toast.LENGTH_SHORT).show();
         }
     }
 
