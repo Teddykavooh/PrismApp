@@ -104,7 +104,14 @@
     SharedPreferences myData;
     private String spHeader;
     private String spFooter;
-    RelativeLayout myLay;
+     private final String validator = "";
+     /*
+        //samsung:c5f3e16ee3cadd9b bcc01e9aa182535c
+        //808be1b27acb6dc0
+        //90c59309ec302f3e
+        //Default:fcf52d5c63cb4676
+        //1fc74ff9a9ebb122
+     */
 
     /*Intercepting messages.*/
 
@@ -191,12 +198,19 @@
     }
 
     public void licenceCheck(MenuItem i) {
-        if (deviceId.equals("")) {
+        if (deviceId.equals(validator)) {
             Toast.makeText(getApplicationContext(), "You are licensed.",
                     Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(getApplicationContext(), "You are unlicensed.\n" +
-                    "Your license is: " + deviceId, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "You are unlicensed.",
+                    Toast.LENGTH_SHORT).show();
+            new AlertDialog.Builder(this)
+                    .setIcon(R.drawable.red_bird_edit)
+                    .setTitle("LICENSE STATUS")
+                    .setMessage("Device ID: " + deviceId + "\n" + "In need of activation?\n" +
+                            "Call 0721555001, 0726465617\n" + "or\n" + "email: androidposkenya.co.ke")
+                    .setNegativeButton("Back", null)
+                    .show();
         }
     }
 
@@ -220,12 +234,7 @@
      }
 
     public void printOn() {
-        if (deviceId.equals("")) {
-            //samsung:c5f3e16ee3cadd9b bcc01e9aa182535c
-            //84388320c5dbd014
-            //90c59309ec302f3e
-            /*Default:fcf52d5c63cb4676
-            * 1fc74ff9a9ebb122*/
+        if (deviceId.equals(validator)) {
             /*set Power ON*/
             powerLaunch = 1;
             PosApiHelper.getInstance().SysSetPower(powerLaunch);
@@ -378,8 +387,6 @@
         // Get the application context
         mContext = getApplicationContext();
         mActivity = MainActivity.this;
-
-        myLay = findViewById(R.id.lay2);
 
         messages = findViewById(R.id.messages);
         //input = (EditText) findViewById(R.id.input);
@@ -1003,7 +1010,7 @@
                         posApiHelper.PrintSetFont((byte) 26, (byte) 26, (byte) 0x00);
                         posApiHelper.PrintStr("        \n");
                         cHeader();
-                        posApiHelper.PrintStr(ss + "\n" + text + "\n");
+                        posApiHelper.PrintStr(boldCopy + "\n" + text + "\n");
                         cFooter();
                         posApiHelper.PrintStr("        \n");
 
