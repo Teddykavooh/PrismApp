@@ -41,7 +41,7 @@
                 app:showAsAction="never"/>
             <item
                 android:title="Activate Printer"
-                android:icon="@drawable/ic_baseline_local_printshop_24"
+                android:icon="@drawable/baseline_local_printshop_24"
                 android:onClick="prnAct"
                 android:id="@+id/printerOn"
                 app:showAsAction="never"/>

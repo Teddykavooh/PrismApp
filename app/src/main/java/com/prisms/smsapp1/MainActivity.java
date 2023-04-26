@@ -33,6 +33,7 @@
  import android.text.style.StyleSpan;
  import android.util.Log;
  import android.view.KeyEvent;
+ import android.view.LayoutInflater;
  import android.view.Menu;
  import android.view.MenuInflater;
  import android.view.MenuItem;
@@ -106,6 +107,8 @@
     private String spFooter;
      private final String validator = "";
      /*
+        c56e6c43d89ac479
+        c3ff7d7eff3d33ed
         //samsung:c5f3e16ee3cadd9b bcc01e9aa182535c
         //808be1b27acb6dc0
         //90c59309ec302f3e
@@ -370,6 +373,18 @@
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /** Action Bar */
+        Objects.requireNonNull(this.getSupportActionBar()).setDisplayShowHomeEnabled(true);
+        this.getSupportActionBar().setLogo(R.drawable.prism_logo_wht_bkg);
+        this.getSupportActionBar().setDisplayUseLogoEnabled(true);
+        //AppName
+        this.getSupportActionBar().setDisplayShowCustomEnabled(true);
+        this.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        LayoutInflater myInflator = LayoutInflater.from(this);
+        View v = myInflator.inflate(R.layout.action_bar_text, null);
+        v.findViewById(R.id.ac_title);
+        this.getSupportActionBar().setCustomView(v);
 
      /*   View decorView = getWindow().getDecorView();
         // Hide both the navigation bar and the status bar.
