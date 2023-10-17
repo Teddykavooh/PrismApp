@@ -209,10 +209,10 @@
                     Toast.LENGTH_SHORT).show();
             new AlertDialog.Builder(this)
                     .setIcon(R.drawable.red_bird_edit)
-                    .setTitle("LICENSE STATUS")
+                    .setTitle("App License Status")
                     .setMessage("Device ID: " + deviceId + "\n" + "In need of activation?\n" +
-                            "Call 0721555001, 0726465617\n" + "or\n" + "email: androidposkenya.co.ke")
-                    .setNegativeButton("Back", null)
+                            "Call +254721555001, +254797847747\n" + "or\n" + "email: renotechsystemsltd@gmail.com")
+                    .setNegativeButton("Quit", null)
                     .show();
         }
     }
@@ -672,7 +672,17 @@
                         );
                     }
                 });
-                builder.setNeutralButton("Cancel",null);
+//                builder.setNeutralButton("Cancel",null);
+
+                //Correct permission denial logic
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        onDestroy();
+                        finishAffinity();
+                        System.exit(0);
+                    }
+                });
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }else{
