@@ -105,7 +105,7 @@
     SharedPreferences myData;
     private String spHeader;
     private String spFooter;
-     private final String validator = "";
+    private final String validator = "";
      /*
         c56e6c43d89ac479
         c3ff7d7eff3d33ed
