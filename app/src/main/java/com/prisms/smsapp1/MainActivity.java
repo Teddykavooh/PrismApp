@@ -253,8 +253,8 @@
             new AlertDialog.Builder(MainActivity.this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle("VERIFICATION")
-                    .setMessage("In need of activation?\n" + "Call 0721555001, 0726465617\n"
-                            + "or\n" + "email: androidposkenya.co.ke")
+                    .setMessage("Device ID: " + deviceId + "\n" + "In need of activation?\n" +
+                            "Call +254721555001, +254797847747\n" + "or\n" + "email: renotechsystemsltd@gmail.com")
                     .setNegativeButton("BACK", null)
                     .show();
         }
